@@ -1,0 +1,7 @@
+There are 2 queries in the folder one as AdHOC Solution and second one as a stored procedure.
+1) The ADHOC solution is based on importing data from text file so the folder location needs to be changed server folder location.
+ for example the dataset location in the solution is '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet1.txt' where 'nhqtwra1' is ServerName.
+
+2) For Stored Procedure database name [DW] needs to be changed to a database on the server and like ADHOC solution folder location needs to be changed to server name.
+	
+	EXEC [dbo].[ETL1A_CODING_CHALLENGE] @datasetOveride = '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet2.txt'
