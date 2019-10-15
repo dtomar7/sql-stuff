@@ -6,7 +6,7 @@ CREATE TABLE #temp1
 );
 
 BULK INSERT #temp1
-FROM '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet1.txt'
+FROM '\\server\c$\download\Computershare - Coding Challenge\ChallengeSampleDataSet1.txt'
 WITH
 (
     ROWTERMINATOR = ','
@@ -21,7 +21,7 @@ CREATE TABLE #temp2
 
 --Getting data from 2nd datasource
 BULK INSERT #temp2
-FROM '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet2.txt'
+FROM '\\server\c$\download\Computershare - Coding Challenge\ChallengeSampleDataSet2.txt'
 WITH
 (
     ROWTERMINATOR = ','
