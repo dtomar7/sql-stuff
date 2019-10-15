@@ -23,7 +23,7 @@ BEGIN
 	DECLARE @sql VARCHAR(MAX),@output VARCHAR(MAX) ,@dataset VARCHAR(MAX)
 
 	--Default Dataset file location
-	SET @dataset = '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet1.txt' 
+	SET @dataset = '\\server\c$\download\Computershare - Coding Challenge\ChallengeSampleDataSet1.txt' 
 
 	--Overriding Dataset Value by given input dataset path
 	IF @datasetOveride IS NOT NULL
