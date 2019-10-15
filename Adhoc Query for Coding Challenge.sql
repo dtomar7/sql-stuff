@@ -5,7 +5,6 @@ CREATE TABLE #temp1
     [Share Price] DECIMAL(4, 2)
 );
 
---Getting data from 2nd datasource
 BULK INSERT #temp1
 FROM '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet1.txt'
 WITH
@@ -20,7 +19,7 @@ CREATE TABLE #temp2
     [Share Price] DECIMAL(4, 2)
 );
 
-
+--Getting data from 2nd datasource
 BULK INSERT #temp2
 FROM '\\nhqtwra1\c$\testfolder\Learning\ChallengeSampleDataSet2.txt'
 WITH
