@@ -68,7 +68,7 @@ DROP TABLE IF EXISTS #tradePrices
 	SELECT Id,
            [Share Price],
            [Dataset],
-		   ROW_NUMBER() OVER (PARTITION BY [Month] ORDER BY Id ) AS [DayOfMonth]
+		   ROW_NUMBER() OVER (PARTITION BY [Dataset] ORDER BY Id ) AS [DayOfMonth]
 	INTO #tradePrices
 	FROM #inputs
 
@@ -89,7 +89,7 @@ DROP TABLE IF EXISTS #output
 	SELECT a.[Output],a.[Dataset] 
 	FROM (
 			SELECT *,
-				   ROW_NUMBER() OVER (PARTITION BY Month ORDER BY Profit DESC ) AS RN
+				   ROW_NUMBER() OVER (PARTITION BY [Dataset] ORDER BY Profit DESC ) AS RN
 			FROM #output
 			WHERE Profit IS NOT NULL
 		)a
