@@ -46,6 +46,7 @@ CREATE TABLE #inputs
 );
 
 
+
 INSERT INTO #inputs
 (
     [Share Price],
@@ -61,6 +62,7 @@ SELECT [Share Price]
 		,2 AS [Month] --To indate Second Dataset (2nd monthly data)
 FROM #temp2
 
+
 --Adding DayOfMonth data to share prices
 DROP TABLE IF EXISTS #tradePrices
 
@@ -71,23 +73,28 @@ DROP TABLE IF EXISTS #tradePrices
 	INTO #tradePrices
 	FROM #inputs
 
+
 --Get the data for 1st data set
-SELECT TOP 1 CONCAT(CONCAT(buyPrice.[DayOfMonth], '(', CONCAT(buyPrice.[Share Price] , '),')) ,CONCAT(sellPrice.[DayOfMonth], '(', CONCAT(sellPrice.[Share Price] , ')'))) AS [Output] 
+DROP TABLE IF EXISTS #output
+SELECT CONCAT(CONCAT(buyPrice.[DayOfMonth], '(', CONCAT(buyPrice.[Share Price] , '),')) ,CONCAT(sellPrice.[DayOfMonth], '(', CONCAT(sellPrice.[Share Price] , ')'))) AS [Output] 
 			,buyPrice.[Month]
+			,(sellPrice.[Share Price] - buyPrice.[Share Price]) AS [Profit]
+INTO #output
 FROM #tradePrices buyPrice
     LEFT JOIN #tradePrices sellPrice
         ON sellPrice.[DayOfMonth] > buyPrice.[DayOfMonth]
-WHERE buyPrice.[Month] = 1 AND sellPrice.[Month] = 1
+		AND buyPrice.[Month] = sellPrice.[Month]
 ORDER BY (sellPrice.[Share Price] - buyPrice.[Share Price]) DESC;
 
---Get the data for 2nd data set
-SELECT TOP 1 CONCAT(CONCAT(buyPrice.[DayOfMonth], '(', CONCAT(buyPrice.[Share Price] , '),')) ,CONCAT(sellPrice.[DayOfMonth], '(', CONCAT(sellPrice.[Share Price] , ')'))) AS [Output] 
-			,buyPrice.[Month]
-FROM #tradePrices buyPrice
-    LEFT JOIN #tradePrices sellPrice
-        ON sellPrice.[DayOfMonth] > buyPrice.[DayOfMonth]
-WHERE buyPrice.[Month] = 2 AND sellPrice.[Month] = 2
-ORDER BY (sellPrice.[Share Price] - buyPrice.[Share Price]) DESC;
+
+SELECT a.[Output],a.[Month]
+FROM (
+SELECT *,
+	   ROW_NUMBER() OVER (PARTITION BY Month ORDER BY Profit DESC ) AS RN
+FROM #output
+WHERE Profit IS NOT NULL
+)a
+WHERE a.RN = 1
 
 
 
