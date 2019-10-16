@@ -1,4 +1,12 @@
 --Getting data from 1st datasource
+/* --If we were to have a string of input data instead of text or csv file
+DECLARE @dataset VARCHAR(MAX)
+SET @dataset = '18.93,20.25,17.05,16.59,21.09,16.22,21.43,27.13,18.62,21.31,23.96,25.52,19.64,23.49,15.28,22.77,23.1,26.58,27.03,23.75,27.39,15.93,17.83,18.82,21.56,25.33,25,19.33,22.08,24.03'
+SELECT value AS [Share Price]
+INTO #temp1
+FROM STRING_SPLIT(@dataset, ',')
+*/
+
 DROP TABLE IF EXISTS #temp1;
 CREATE TABLE #temp1
 (
