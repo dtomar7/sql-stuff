@@ -74,7 +74,7 @@ DROP TABLE IF EXISTS #tradePrices
 	FROM #inputs
 
 
---Get the data for 1st data set
+--Preparing output data
 DROP TABLE IF EXISTS #output
 SELECT CONCAT(CONCAT(buyPrice.[DayOfMonth], '(', CONCAT(buyPrice.[Share Price] , '),')) ,CONCAT(sellPrice.[DayOfMonth], '(', CONCAT(sellPrice.[Share Price] , ')'))) AS [Output] 
 			,buyPrice.[Month]
@@ -84,7 +84,7 @@ FROM #tradePrices buyPrice
     LEFT JOIN #tradePrices sellPrice
         ON sellPrice.[DayOfMonth] > buyPrice.[DayOfMonth]
 		AND buyPrice.[Month] = sellPrice.[Month]
-ORDER BY (sellPrice.[Share Price] - buyPrice.[Share Price]) DESC;
+
 
 
 SELECT a.[Output],a.[Month]
