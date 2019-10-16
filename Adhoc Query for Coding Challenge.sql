@@ -43,23 +43,23 @@ DROP TABLE IF EXISTS #inputs
 	(
 		[Id] [INT] IDENTITY(1, 1) NOT NULL,
 		[Share Price] DECIMAL(4, 2) NOT NULL,
-		[Month] INT NULL
+		[Dataset] INT NULL
 	);
 
 
 	INSERT INTO #inputs
 	(
 		[Share Price],
-		[Month]
+		[Dataset]
 	)
 	SELECT [Share Price]
-			,1 AS [Month] --To indate First Dataset (1st monthly data)
+			,1 AS [Dataset] --To indicate First Dataset (1st monthly data)
 	FROM #temp1
 
 	UNION ALL
 
 	SELECT [Share Price]
-			,2 AS [Month] --To indate Second Dataset (2nd monthly data)
+			,2 AS [Dataset] --To indicate Second Dataset (2nd monthly data)
 	FROM #temp2
 
 --Adding DayOfMonth data to share prices
@@ -67,7 +67,7 @@ DROP TABLE IF EXISTS #tradePrices
 
 	SELECT Id,
            [Share Price],
-           [Month],
+           [Dataset],
 		   ROW_NUMBER() OVER (PARTITION BY [Month] ORDER BY Id ) AS [DayOfMonth]
 	INTO #tradePrices
 	FROM #inputs
@@ -76,17 +76,17 @@ DROP TABLE IF EXISTS #tradePrices
 DROP TABLE IF EXISTS #output
 
 	SELECT CONCAT(CONCAT(buyPrice.[DayOfMonth], '(', CONCAT(buyPrice.[Share Price] , '),')) ,CONCAT(sellPrice.[DayOfMonth], '(', CONCAT(sellPrice.[Share Price] , ')'))) AS [Output] 
-				,buyPrice.[Month]
+				,buyPrice.[Dataset]
 				,(sellPrice.[Share Price] - buyPrice.[Share Price]) AS [Profit]
 	INTO #output
 	FROM #tradePrices buyPrice
 		LEFT JOIN #tradePrices sellPrice
 			ON sellPrice.[DayOfMonth] > buyPrice.[DayOfMonth]
-			AND buyPrice.[Month] = sellPrice.[Month]
+			AND buyPrice.[Dataset] = sellPrice.[Dataset]
 
 
 
-	SELECT a.[Output],a.[Month]
+	SELECT a.[Output],a.[Dataset] 
 	FROM (
 			SELECT *,
 				   ROW_NUMBER() OVER (PARTITION BY Month ORDER BY Profit DESC ) AS RN
