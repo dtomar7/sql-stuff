@@ -1,0 +1,149 @@
+USE [DW]
+GO
+/****** Object:  StoredProcedure [dbo].[ETL_D_STAFF]    Script Date: 28/10/2019 15:41:33 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+ALTER PROCEDURE [dbo].[ETL_D_STAFF]
+(
+@snapshotdateOverride date null = null
+)
+AS
+BEGIN
+
+    --get snapshotdate
+	DECLARE @snapshotdate date
+	       ,@procName nvarchar(150) =  OBJECT_NAME(@@PROCID)
+		   ,@rowCount int 
+	SELECT @snapshotdate = CONVERT(date, CONFIG_VALUE, 120) FROM [ETL].[dbo].[GET_CONFIG_VALUE]('HRSystem_snapshotdate')
+	
+	IF @snapshotdateOverride IS NOT NULL
+		SET @snapshotdate = @snapshotdateOverride
+
+	EXEC ETL.dbo.ETL_LOG_START @snapshotdate = @snapshotdate, @jobName = @procName
+
+	-- rerun
+	-- delete new inserted rows
+	DELETE FROM D_STAFF 
+		WHERE snapshotdate = @snapshotdate
+		  AND DATE_EFFECTIVE_FROM = @snapshotdate
+
+	-- update back updated rows
+	UPDATE D_STAFF
+	   SET DATE_EFFECTIVE_TO = '2099-12-31'
+	 WHERE snapshotdate = @snapshotdate
+
+	-- reseed dimension to avoid missing surrogate keys
+	DECLARE @maxVal INT
+	SELECT @maxVal = ISNULL(max(ID_D_STAFF),0)+1
+		,@rowCount = COUNT(*)
+		FROM D_STAFF
+	IF @rowCount = 0
+		DBCC CHECKIDENT (D_STAFF, RESEED, 0);
+	ELSE DBCC CHECKIDENT (D_STAFF, RESEED, @maxVal);
+
+	-- apply new changes
+	-- update non SCD attributes
+	UPDATE dim
+	SET [Full Name] = stg.[Full Name]
+		,[Email] = stg.[Email]
+		,[TicketSystem Username] = stg.[TicketSystem Username]
+		,[TicketSystem User Id] = stg.[TicketSystem User Id]
+		,[Gender] = stg.[Gender]
+		,[Hire Date] = stg.[Hire Date]
+		,[Employment End Date] = stg.[Employment End Date]
+		,[Employment End Type] = stg.[Employment End Type]
+		,[Regretted Turnover] = stg.[Regretted Turnover]
+		,[Managed By Staff UId] = stg.[Managed By Staff UId]
+		,[Chat Messenger Id] = stg.[Chat Messenger Id]
+		,DATE_EFFECTIVE_TO = CASE WHEN DATE_EFFECTIVE_TO = '2099-12-31' AND OPERATION_FLAG = 'UPS' THEN DATEADD(DAY, -1, @snapshotdate) ELSE DATE_EFFECTIVE_TO END
+		-- when the record is not current then do not update snapshotdate
+		,snapshotdate = CASE WHEN DATE_EFFECTIVE_TO = '2099-12-31' THEN @snapshotdate ELSE dim.snapshotdate END
+	FROM D_STAFF dim
+	INNER JOIN STG.dbo.STG_D_STAFF stg
+		ON stg.[HRSystem Id] = dim.[HRSystem Id] AND OPERATION_FLAG IN ('UPD', 'UPS')
+		--Commented out as I want to update all records... even historical
+		--AND @snapshotdate BETWEEN dim.DATE_EFFECTIVE_FROM AND DATE_EFFECTIVE_TO
+
+	-- insert new records
+	INSERT INTO D_STAFF
+	(
+		[HRSystem Id]
+		,[OldHRSystem Id]
+		,[Staff UId]
+		,[Full Name]
+		,[TicketSystem Username]
+		,[TicketSystem User Id]
+		,[AD Username]
+		,[Domain Username]
+		,[Email]
+		,[Job Title]
+		,[Department]
+		,[Gender]
+		,[Employment Status]
+		,[Full Time Equivalent]
+		,[Annual Leave Entitled Days]
+		,[Hire Date]
+		,[Employment End Date]
+		,[Employment End Type]
+		,[Regretted Turnover]
+		,[Staff Length of Service in Years]
+		,[Managed By staff UId]
+		,[Managed By HRSystem Id Hist]
+		,[Managed By OldHRSystem Id Hist]
+		,[Managed By staff UId Hist]
+		,[Extension]
+		,[Chat Messenger Id]
+		,[Client Relations Region]
+		,[Power BI High Level Access]
+		,[DATE_EFFECTIVE_FROM]
+		,[DATE_EFFECTIVE_TO]
+		,[snapshotdate]
+    )
+	SELECT stg.[HRSystem Id]
+		,stg.[OldHRSystem Id]
+		,stg.[Staff UId]
+		,stg.[Full Name]
+		,stg.[TicketSystem Username]
+		,stg.[TicketSystem User Id]
+		,stg.[AD Username]
+		,stg.[Domain Username]
+		,stg.[Email]
+		,stg.[Job Title]
+		,stg.[Department]
+		,stg.[Gender]
+		,stg.[Employment Status]
+		,stg.[Full Time Equivalent]
+		,stg.[Annual Leave Entitled Days]
+		,stg.[Hire Date]
+		,stg.[Employment End Date]
+		,stg.[Employment End Type]
+		,stg.[Regretted Turnover]
+		,stg.[Staff Length of Service in Years]
+		,stg.[Managed By staff UId]
+		,stg.[Managed By HRSystem Id Hist]
+		,stg.[Managed By OldHRSystem Id Hist]
+		,stg.[Managed By staff UId Hist]
+		,stg.[Extension]
+		,stg.[Chat Messenger Id]
+		,stg.[Client Relations Region]
+		,stg.[Power BI High Level Access]
+		,[DATE_EFFECTIVE_FROM] = CASE WHEN stg.OPERATION_FLAG = 'INS' THEN '1899-12-31' ELSE @snapshotdate END
+		,[DATE_EFFECTIVE_TO] = '2099-12-31'
+		,stg.[snapshotdate]
+    FROM STG.dbo.STG_D_STAFF stg
+	WHERE OPERATION_FLAG IN ('INS', 'UPS')
+	
+	EXEC ETL.dbo.ETL_LOG_FINISH @snapshotdate = @snapshotdate, @jobName = @procName, @rowsAffected = @@ROWCOUNT
+	
+END
+
+
