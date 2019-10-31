@@ -1,0 +1,157 @@
+	DECLARE @fordate date
+	SET @fordate = CONVERT(date,GETDATE(), 120)
+
+DROP TABLE IF EXISTS #orginalData
+
+	CREATE TABLE #orginalData(
+	[ID] INT,
+	[System Id] INT,
+	[User] NVARCHAR(200),
+	[Status] NVARCHAR(100),
+	[Last Updated Date] DATETIME
+	)
+	
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1, 'DT', 'Open', '2019-08-23 17:35:34.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1, 'DT', 'Open', '2019-08-24 10:26:39.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1, NULL, NULL, '2019-08-26 02:37:48.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1,'RG', 'Awaiting Info', '2019-08-26 18:37:48.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1, 'RG', NULL, '2019-08-27 02:37:48.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 1, 'GP', NULL, '2019-08-30 15:37:48.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, NULL, 'Open', '2019-09-02 02:37:48.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, 'DT', 'Resolved', '2019-09-06 02:45:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, 'DT', 'Open', '2019-09-06 02:52:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, NULL, 'Open', '2019-09-26 03:25:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1,NULL, 'Open', '2019-09-28 01:17:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, 'JM', 'Resolved', '2019-09-29 05:32:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   124, 1, 'JM', 'Closed', '2019-09-30 01:37:28.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 2, 'DT', 'Open', '2019-08-03 17:35:34.000' );
+	INSERT INTO #orginalData (ID,[System Id], [User],[Status],[Last Updated Date]) VALUES (   123, 2, 'DT', 'Awaiting Info', '2019-08-23 17:35:34.000' );
+
+
+--Temp Holiday data
+DROP TABLE IF EXISTS #holidayDate
+
+	CREATE TABLE #holidayDate(
+	[ID] INT,
+	[Date] DATE,
+	[IsWeekDay] int,
+	[IsHolidayUK] NVARCHAR(100)
+	)
+	
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190803, '2019-08-03',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190804, '2019-08-04',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190810, '2019-08-10',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190811, '2019-08-11',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190817, '2019-08-17',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190818, '2019-08-18',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190824, '2019-08-24',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190825, '2019-08-25',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190826, '2019-08-26',	0,	1);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190831, '2019-08-31',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190901, '2019-09-01',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190907, '2019-09-07',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190908, '2019-09-08',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190914, '2019-09-14',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190915, '2019-09-15',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190921, '2019-09-21',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190922, '2019-09-22',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190928, '2019-09-28',	0,	0);
+		INSERT INTO #holidayDate ([ID] ,[Date] ,[IsWeekDay] ,[IsHolidayUK]) VALUES(20190929, '2019-09-29',	0,	0);
+
+
+DROP TABLE IF EXISTS #status	
+	
+	SELECT [ID]
+		  ,[System Id] 
+		  ,[User] 
+		  ,[Status]
+		  ,[Last Updated Date]
+		  ,ROW_NUMBER() OVER (PARTITION BY [ID],[System Id] ORDER BY [Last Updated Date]) AS RN
+	INTO #status
+	FROM #orginalData
+
+--Getting Last Non Null Values
+DROP TABLE IF EXISTS #status_last_non_value
+
+   SELECT [ID]
+ 		 ,[System Id]
+ 		 ,CAST(SUBSTRING(MAX(CAST(RN AS BINARY(50)) + CAST([User] AS VARBINARY(200))) 
+ 					OVER(PARTITION BY ID,[System Id] ORDER BY RN ASC ROWS UNBOUNDED PRECEDING ),51,200) AS NVARCHAR(MAX))  AS [User]
+ 		 ,CAST(SUBSTRING(MAX(CAST(RN AS BINARY(50)) + CAST([Status] AS VARBINARY(200))) 
+ 					OVER(PARTITION BY ID,[System Id] ORDER BY RN ASC ROWS UNBOUNDED PRECEDING ),51,200) AS NVARCHAR(MAX))  AS [Status]
+ 		,[Last Updated Date]
+ 		,RN
+   INTO #status_last_non_value
+   FROM #status
+
+--Creating Range for Users and Status
+DROP TABLE IF EXISTS #user_status_range
+
+	;WITH user_status_time_range 
+		AS (
+			 SELECT ID
+				   ,[System Id]
+				   ,[User]
+				   ,[Status]
+				   ,LAG([User]) OVER(PARTITION BY ID,[System Id] ORDER BY RN ) AS [Previous User]
+				   ,LAG([Status]) OVER(PARTITION BY ID,[System Id] ORDER BY RN ) AS [Previous Status]
+				   ,[Last Updated Date]
+					FROM #status_last_non_value
+		)
+		SELECT  [ID]
+			   ,[System Id]
+			   ,[User]
+			   ,[Status]
+			   ,[Last Updated Date]
+			   ,ROW_NUMBER() OVER (PARTITION BY ID,[System Id] ORDER BY [Last Updated Date]) AS RN2
+		INTO #user_status_range
+		FROM user_status_time_range
+		WHERE [Previous User] <> [User]
+		OR [Previous Status] <> [Status]
+		OR (	[Previous User] IS NULL 
+				AND [Previous Status] IS NULL	)
+
+	
+--Changing Dates for Working hours.
+		DROP TABLE IF EXISTS #time_assigned
+			;WITH updated_dates 
+					AS
+					  (
+						SELECT new.* 
+								 ,CASE WHEN new.[Last Updated Date] >= DATEADD(HOUR,17,CONVERT(DATETIME,CONVERT(DATE,new.[Last Updated Date],120))) THEN DATEADD(HOUR,17,CONVERT(DATETIME,CONVERT(DATE,new.[Last Updated Date],120)))			--Change the time to updated time to 5 pm if it was after 5 pm.
+									  WHEN new.[Last Updated Date] <= DATEADD(MINUTE,510,CONVERT(DATETIME,CONVERT(DATE,new.[Last Updated Date],120))) THEN DATEADD(MINUTE,510,CONVERT(DATETIME,CONVERT(DATE,new.[Last Updated Date],120)))		--Change the time to updated time to 8:30 am if it was before 8:30 am.
+									  ELSE new.[Last Updated Date]
+								 END  AS [New Last Updated Date]
+								,CASE WHEN ISNULL(nxt.[Last Updated Date],@fordate) >= DATEADD(HOUR,17,CONVERT(DATETIME,CONVERT(DATE,ISNULL(nxt.[Last Updated Date],@fordate),120))) THEN DATEADD(HOUR,17,CONVERT(DATETIME,CONVERT(DATE,ISNULL(nxt.[Last Updated Date],@fordate),120)))			--Change the time to updated time to 5 pm if it was after 5 pm.
+									  WHEN ISNULL(nxt.[Last Updated Date],@fordate) <= DATEADD(MINUTE,510,CONVERT(DATETIME,CONVERT(DATE,ISNULL(nxt.[Last Updated Date],@fordate),120))) THEN DATEADD(MINUTE,510,CONVERT(DATETIME,CONVERT(DATE,ISNULL(nxt.[Last Updated Date],@fordate),120)))	--Change the time to updated time to 8:30 am if it was before 8:30 am.
+									  ELSE ISNULL(nxt.[Last Updated Date],@fordate)
+								 END  AS [Next Last Updated Date]
+								 ,nxt.[Status] AS [Next Status]
+						FROM #user_status_range new
+						LEFT JOIN #user_status_range nxt --Finding Previous Status and time difference between previous and current status 
+							ON nxt.ID = new.ID
+							AND nxt.[System Id] = new.[System Id]
+							AND nxt.RN2 = new.RN2 + 1
+						)
+			
+							--Calculating how long a ticket was asigned to someone in minutes.		
+							SELECT ID
+								   ,[System Id]
+								   ,ISNULL([User],'Unknown') AS [User]
+								   ,[Status]
+								   ,[Last Updated Date]
+								   ,CASE WHEN DATEDIFF(DAY,[New Last Updated Date],[Next Last Updated Date]) > 0 --If status or assignee changed on the same day find time assigned in mins, else finding the all the work days and work hours to caluclate the time assigned.
+											THEN DATEDIFF(MINUTE ,[New Last Updated Date],DATEADD(HOUR,17,CONVERT(DATETIME,CONVERT(DATE,[New Last Updated Date],120)))) + DATEDIFF(MINUTE ,DATEADD(MINUTE,510,CONVERT(DATETIME,CONVERT(DATE,[Next Last Updated Date],120))),[Next Last Updated Date]) 
+												+ (DATEDIFF(DAY,[New Last Updated Date],[Next Last Updated Date]) - ( SELECT COUNT(*) FROM #holidayDate subDate WHERE (subDate.IsWeekday = 0 OR subDate.IsHolidayUK = 1) AND subDate.Date BETWEEN [New Last Updated Date] AND [Next Last Updated Date]))* 8.5 * 60
+										ELSE DATEDIFF(MINUTE,[New Last Updated Date],[Next Last Updated Date]) END AS [Assigned Time (Min)]
+							INTO #time_assigned
+							FROM updated_dates
+							ORDER BY ID,[System Id],[Last Updated Date]
+
+
+		SELECT * FROM #time_assigned
+
+
+		
+
+		
