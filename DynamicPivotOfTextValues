@@ -1,0 +1,38 @@
+DECLARE @Columns as VARCHAR(MAX)
+
+IF(OBJECT_ID('tempdb..#ETL_CONFIG') IS NOT NULL) BEGIN DROP TABLE #ETL_CONFIG END
+
+SELECT 
+       CONFIG_VALUE,
+	   CONFIG_SYSTEM + '_'+ CONFIG_NAME AS ConfigName
+INTO #ETL_CONFIG
+FROM [DataHub].[dbo].[ETL_CONFIG] 
+  WHERE CONFIG_SYSTEM IN 
+  ('HR_System'
+	,'ActiveDirectory')
+
+SELECT @Columns =
+COALESCE(@Columns + ', ','') + QUOTENAME(ConfigName)
+FROM
+   (SELECT ConfigName
+	FROM #ETL_CONFIG
+   ) AS B
+ORDER BY B.ConfigName
+
+DECLARE @SQL as VARCHAR(MAX)
+SET @SQL = 'SELECT *
+FROM
+(
+ SELECT CONFIG_VALUE
+ ,ConfigName
+ FROM #ETL_CONFIG
+  
+) as PivotData
+PIVOT
+(
+   Max(CONFIG_VALUE)
+   FOR [ConfigName] IN ([ActiveDirectory_ImportFolder], [ActiveDirectory_SnapshotDate], [HR_System_ImportFolder], [HR_System_SnapshotDate])
+) AS p
+'
+
+EXEC(@Sql)
