@@ -1,0 +1,61 @@
+USE [DataHub]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GET_ETL_CONFIG]
+(
+ @ConfigSystem VARCHAR(MAX)
+)
+AS
+BEGIN
+
+DECLARE @Columns as VARCHAR(MAX)
+		
+
+IF(OBJECT_ID('tempdb..#ETL_CONFIG') IS NOT NULL) BEGIN DROP TABLE #ETL_CONFIG END
+
+
+DECLARE @SQL as VARCHAR(MAX)
+
+SELECT 
+       CONFIG_VALUE,
+	   CONFIG_SYSTEM + '_'+ CONFIG_NAME AS ConfigName
+INTO #ETL_CONFIG
+FROM [DataHub].[dbo].[ETL_CONFIG] 
+  WHERE CONFIG_SYSTEM IN 
+  (@ConfigSystem)
+
+SELECT @Columns =
+COALESCE(@Columns + ', ','') + QUOTENAME(ConfigName)
+FROM
+   (SELECT ConfigName
+	FROM #ETL_CONFIG
+   ) AS B
+ORDER BY B.ConfigName
+
+
+SET @SQL = 'SELECT *
+FROM
+(
+ SELECT CONFIG_VALUE
+ ,ConfigName
+ FROM #ETL_CONFIG
+  
+) as PivotData
+PIVOT
+(
+   Max(CONFIG_VALUE)
+   FOR [ConfigName] IN (' + @Columns +')
+) AS p
+'
+
+EXEC(@Sql)
+
+END 
+
+
+
