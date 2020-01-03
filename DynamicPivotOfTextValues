@@ -31,7 +31,7 @@ FROM
 PIVOT
 (
    Max(CONFIG_VALUE)
-   FOR [ConfigName] IN ([ActiveDirectory_ImportFolder], [ActiveDirectory_SnapshotDate], [HR_System_ImportFolder], [HR_System_SnapshotDate])
+   FOR [ConfigName] IN (' + @Columns +')
 ) AS p
 '
 
