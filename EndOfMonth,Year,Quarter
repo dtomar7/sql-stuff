@@ -1,0 +1,13 @@
+
+SELECT   DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) - 1, 0)						AS [First day of the previous year]
+	      ,DATEADD(yy, DATEDIFF(yy, 0, GETDATE()), 0)							  AS [Last day of the previous year]
+        ,DATEADD(dd, -1, DATEADD(yy, DATEDIFF(yy, 0, GETDATE()), 0))		AS [First day of the current year]
+        ,DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) + 1, 0)						AS [Last day of the current year]
+        ,DATEADD (dd, -1, DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) +2, 0))	AS [First day of the next year]
+        ,DATEADD (dd, -1, DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) +2, 0))	AS [Last day of the next year]
+        ,DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) - 1, 0)						AS [First day of the previous quarter]
+        ,DATEADD(dd, -1, DATEADD(qq, DATEDIFF(qq, 0, GETDATE()), 0))		AS [Last day of the previous quarter]
+        ,DATEADD(qq, DATEDIFF(qq, 0, GETDATE()), 0)							AS [First day of the current quarter]
+        ,DATEADD (dd, -1, DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) +1, 0))	AS [Last day of the current quarter]
+        ,DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) + 1, 0)						AS [First day of the next quarter]
+        ,DATEADD (dd, -1, DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) +2, 0))	AS [Last day of the next quarter]
