@@ -1,0 +1,20 @@
+with interconnectors as (
+SELECT hh.ft_date, hh.ft_period, sum(hh.mw) as mw
+FROM genbyfueltype_hh as hh
+join fueltype on fueltype.id = hh.fueltype_id
+where hh.ft_date >= '2019-11-01'
+and hh.ft_date <= '2020-02-29'
+and hh.mw <0
+and fueltype.interconnect = 't'
+group by hh.ft_date, hh.ft_period
+),
+demand as(
+SELECT settlement_day, settlement_period, demand_outturn + coalesce(i.mw,0) as rolling_triad_demand
+FROM scraping.public.systemdemand
+left join interconnectors i on i.ft_period = settlement_period and i.ft_date = settlement_day
+where settlement_day >= '2019-11-01'
+and settlement_day <= '2020-02-29'
+)select settlement_day as Date, settlement_period, cast(CONCAT(cast(settlement_day as VARCHAR), ' ' , replace(CAST(CAST((settlement_period -1) * 30 / 60 + ((settlement_period -1) * 30 % 60) / 100.0 as numeric(18,2))as varchar(5)),'.',':')) as timestamp) as SettlementDateTime, rolling_triad_demand
+from demand
+order by settlement_day, settlement_period
+
