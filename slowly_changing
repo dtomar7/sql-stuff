@@ -1,0 +1,82 @@
+GO
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:      Deepak Tomar
+-- Create Date: 2023-12-18
+-- Description: Slowly changing dimension for ManagementReports_DailyOnBoarding
+-- =============================================
+
+
+CREATE OR ALTER PROCEDURE [dbo].[ManagementReports_DailyOnBoarding]
+ AS
+	/* Get snapshotdate */
+	DECLARE @snapshotdate DATE = CONVERT(DATE, GETDATE())
+	
+	/* For Reruns, Delete newly inserted rows */
+	DELETE FROM [ManagementReports].[DailyOnBoarding]
+		WHERE Snapshotdate = @snapshotdate
+		  AND [EffectiveFrom] = @snapshotdate
+
+	/* Drop the staging temporary table */
+	DROP TABLE IF EXISTS #StagingData
+		 
+		 SELECT ub.ID AS [PatientId]
+				   ,ub.[LenusId]
+				   ,o.[Id] AS [OrganisationId]
+				   ,s.[Name] AS [SectorName]
+				   ,o.[Name] AS [Organisation]
+				   ,ub.[Email]
+				   ,ub.[Archived]
+				   ,ub.[Created] AS [CreatedDateTime]
+				   ,CONVERT(DATE, ub.[Created]) AS [EffectiveFrom]
+				   ,'2099-12-31' AS [EffectiveTo]
+				   ,@snapshotdate AS Snapshotdate
+			INTO #StagingData
+			FROM [dbo].[UserBase] ub
+			INNER JOIN [dbo].[OrganisationMemberships] om ON ub.id = om.userbaseid
+			INNER JOIN [dbo].[Organisations] o ON om.organisationid = o.id
+			LEFT JOIN [dbo].[Sectors] s ON ub.SectorId = s.id
+			WHERE ub.[Discriminator] = 'Patient'
+
+	/* Update existing data for the changes*/
+		UPDATE db
+		SET db.[EffectiveTo] = DATEADD(DAY,-1,@snapshotdate)
+		FROM [ManagementReports].[DailyOnBoarding] db
+		LEFT JOIN #StagingData sd
+			ON db.PatientId = sd.PatientId
+		WHERE db.[EffectiveTo] = '2099-12-31'
+		AND
+		(
+		       sd.[LenusId]         <> db.[LenusId]
+			OR sd.[OrganisationId]	<> db.[OrganisationId]
+			OR sd.[SectorName]		<> db.[SectorName]
+			OR sd.[Organisation]	<> db.[Organisation]
+			OR sd.[Email]			<> db.[Email]
+			OR sd.[Archived]		<> db.[Archived]
+			 )
+	
+	/* Insert changed or new data*/
+	INSERT INTO [ManagementReports].[DailyOnBoarding]
+	SELECT sd.[PatientId]
+		  ,sd.[LenusId]
+		  ,sd.[OrganisationId]
+		  ,sd.[SectorName]
+		  ,sd.[Organisation]
+		  ,sd.[Email]
+		  ,sd.[Archived]
+		  ,sd.[CreatedDateTime]
+		  ,CASE WHEN db.PatientId IS NULL THEN sd.[EffectiveFrom] ELSE @snapshotdate END AS [EffectiveFrom]
+		  ,sd.[EffectiveTo]
+		  ,sd.[SnapshotDate]
+		FROM #StagingData sd
+		LEFT JOIN [ManagementReports].[DailyOnBoarding] db
+			ON sd.PatientId = db.PatientId
+		WHERE db.[EffectiveTo] <> '2099-12-31'
+		OR db.PatientId IS NULL
+
+GO
